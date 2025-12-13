@@ -10,7 +10,7 @@ char tokenString[MAXTOKENLEN+1];
 digit       [0-9]
 number      {digit}+
 letter      [a-zA-Z]
-identifier  {letter}({letter}|{digit})*
+identifier  {letter}+
 newline     \n
 whitespace  [ \t]+
 
