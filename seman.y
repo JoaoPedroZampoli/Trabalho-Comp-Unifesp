@@ -73,6 +73,7 @@ void imprime_tabela(void);
 %token LEFTPAREN RIGHTPAREN
 %token LEFTBRACE RIGHTBRACE
 %token LEFTBRACKET RIGHTBRACKET
+%token ERROR
 
 %token <id> ID
 %token <num> NUM
@@ -410,7 +411,7 @@ void insere_simbolo(char *nome, Tipo tipo, Classe classe, int tamanho){
     for(Simbolo *sim = escopo_atual->simbolos; sim != NULL; sim = sim->prox){
         if(strcmp(sim->nome, nome) == 0){
             /* fprintf(stderr, "Erro: símbolo '%s' já declarado neste escopo.\n", nome); // Talvez tirar daqui e só deixar o YYERROR? */
-            fprintf(stderr, "ERRO SEMANTICO: identificador '%s' já declarado neste escopo - LINHA: %d\n", nome, lineno);
+            fprintf(stderr, "ERRO SEMANTICO: identificador '%s' ja declarado neste escopo - LINHA: %d\n", nome, lineno);
             yyerror("identificador duplicado no mesmo escopo");
             exit(1);
         }
