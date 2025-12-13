@@ -1,6 +1,6 @@
 %{
 #include "globals.h"
-#include "parser.tab.h"
+#include "seman.tab.h"
 
 int lineno = 1;
 char tokenString[MAXTOKENLEN+1];
@@ -10,7 +10,7 @@ char tokenString[MAXTOKENLEN+1];
 digit       [0-9]
 number      {digit}+
 letter      [a-zA-Z]
-identifier  {letter}+
+identifier  {letter}({letter}|{digit})*
 newline     \n
 whitespace  [ \t]+
 
@@ -23,17 +23,17 @@ whitespace  [ \t]+
 "void"          { return VOID; }
 "while"         { return WHILE; }
 
-"+"             { return MAIS; }
-"-"             { return MENOS; }
-"*"             { return VEZES; }
-"/"             { return DIVIDIDO; }
+"+"             { return PLUS; }
+"-"             { return MINUS; }
+"*"             { return TIMES; }
+"/"             { return DIV; }
 
-"<"             { return LESSTHAN; }
 "<="            { return LESSEQUAL; }
-">"             { return GREATERTHAN; }
 ">="            { return GREATEREQUAL; }
 "=="            { return EQUAL; }
 "!="            { return NOTEQUAL; }
+"<"             { return LESSTHAN; }
+">"             { return GREATERTHAN; }
 "="             { return ASSIGN; }
 
 ";"             { return SEMICOLON; }
