@@ -1,4 +1,5 @@
 %{
+#include <string.h>
 #include "globals.h"
 #include "seman.tab.h"
 

@@ -109,12 +109,6 @@
 #line 14 "seman.y"
 
 
-static Escopo *escopo_atual = NULL;
-static Tipo tipo_funcao_atual = -1; /* fora de função */
-static int funcao_tem_retorno;
-static int ultima_funcao_eh_main = 0;
-static int main_tem_parametros = 0;
-
 typedef enum {
     TIPO_INT,
     TIPO_VOID
@@ -154,8 +148,9 @@ void imprime_tabela(void);
 
 
 
+
 /* Line 209 of yacc.c  */
-#line 159 "seman.tab.c"
+#line 154 "seman.tab.c"
 
 /* Tokens.  */
 #ifndef YYTOKENTYPE
@@ -201,7 +196,7 @@ typedef union YYSTYPE
 {
 
 /* Line 214 of yacc.c  */
-#line 60 "seman.y"
+#line 63 "seman.y"
 
     int num;
     char *id;
@@ -210,7 +205,7 @@ typedef union YYSTYPE
 
 
 /* Line 214 of yacc.c  */
-#line 214 "seman.tab.c"
+#line 209 "seman.tab.c"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
@@ -222,7 +217,22 @@ typedef union YYSTYPE
 
 
 /* Line 264 of yacc.c  */
-#line 226 "seman.tab.c"
+#line 221 "seman.tab.c"
+/* Unqualified %code blocks.  */
+
+/* Line 265 of yacc.c  */
+#line 55 "seman.y"
+
+static Escopo *escopo_atual = NULL;
+static int tipo_funcao_atual = -1; /* -1 = fora de função */
+static int funcao_tem_retorno;
+static int ultima_funcao_eh_main = 0;
+static int main_tem_parametros = 0;
+
+
+
+/* Line 265 of yacc.c  */
+#line 236 "seman.tab.c"
 
 #ifdef short
 # undef short
@@ -530,13 +540,13 @@ static const yytype_int8 yyrhs[] =
 /* YYRLINE[YYN] -- source line where rule number YYN was defined.  */
 static const yytype_uint16 yyrline[] =
 {
-       0,    92,    92,    96,    97,   101,   102,   107,   116,   128,
-     129,   135,   134,   165,   170,   174,   175,   179,   188,   202,
-     201,   213,   214,   218,   219,   223,   224,   225,   226,   227,
-     232,   233,   237,   238,   242,   246,   264,   288,   289,   293,
-     300,   317,   318,   322,   323,   324,   325,   326,   327,   331,
-     332,   336,   337,   341,   342,   346,   347,   351,   352,   353,
-     354,   358,   375,   376,   380,   381
+       0,    95,    95,    99,   100,   104,   105,   110,   119,   131,
+     132,   138,   137,   168,   173,   177,   178,   182,   191,   205,
+     204,   216,   217,   221,   222,   226,   227,   228,   229,   230,
+     235,   236,   240,   241,   245,   249,   267,   291,   292,   296,
+     303,   320,   321,   325,   326,   327,   328,   329,   330,   334,
+     335,   339,   340,   344,   345,   349,   350,   354,   355,   356,
+     357,   361,   378,   379,   383,   384
 };
 #endif
 
@@ -1511,7 +1521,7 @@ yyreduce:
         case 7:
 
 /* Line 1455 of yacc.c  */
-#line 108 "seman.y"
+#line 111 "seman.y"
     {
             if ((yyvsp[(1) - (3)].tipo) == TIPO_VOID) {
             //    fprintf(stderr, "Variável '%s' não pode ser do tipo void.\n", $2);
@@ -1525,7 +1535,7 @@ yyreduce:
   case 8:
 
 /* Line 1455 of yacc.c  */
-#line 117 "seman.y"
+#line 120 "seman.y"
     {
             if ((yyvsp[(1) - (6)].tipo) == TIPO_VOID) {
             //    fprintf(stderr, "Array '%s' não pode ser do tipo void.\n", $2);
@@ -1539,21 +1549,21 @@ yyreduce:
   case 9:
 
 /* Line 1455 of yacc.c  */
-#line 128 "seman.y"
+#line 131 "seman.y"
     { (yyval.tipo) = TIPO_INT; ;}
     break;
 
   case 10:
 
 /* Line 1455 of yacc.c  */
-#line 129 "seman.y"
+#line 132 "seman.y"
     { (yyval.tipo) = TIPO_VOID; ;}
     break;
 
   case 11:
 
 /* Line 1455 of yacc.c  */
-#line 135 "seman.y"
+#line 138 "seman.y"
     {
           insere_simbolo((yyvsp[(2) - (2)].id), (yyvsp[(1) - (2)].tipo), SIMP_FUNC, 0);
 
@@ -1571,7 +1581,7 @@ yyreduce:
   case 12:
 
 /* Line 1455 of yacc.c  */
-#line 149 "seman.y"
+#line 152 "seman.y"
     {
           if (tipo_funcao_atual == TIPO_INT && !funcao_tem_retorno) {
               fprintf(stderr,
@@ -1588,7 +1598,7 @@ yyreduce:
   case 13:
 
 /* Line 1455 of yacc.c  */
-#line 166 "seman.y"
+#line 169 "seman.y"
     {
             if (ultima_funcao_eh_main)
                 main_tem_parametros = 1;
@@ -1598,7 +1608,7 @@ yyreduce:
   case 17:
 
 /* Line 1455 of yacc.c  */
-#line 180 "seman.y"
+#line 183 "seman.y"
     {
             if ((yyvsp[(1) - (2)].tipo) == TIPO_VOID) {
             //    fprintf(stderr, "Parâmetro '%s' não pode ser do tipo void.\n", $2);
@@ -1612,7 +1622,7 @@ yyreduce:
   case 18:
 
 /* Line 1455 of yacc.c  */
-#line 189 "seman.y"
+#line 192 "seman.y"
     {
             if ((yyvsp[(1) - (4)].tipo) == TIPO_VOID) {
                 fprintf(stderr, "ERRO SEMANTICO: variavel '%s' nao pode ser void - LINHA: %d\n", (yyvsp[(2) - (4)].id), lineno);
@@ -1626,7 +1636,7 @@ yyreduce:
   case 19:
 
 /* Line 1455 of yacc.c  */
-#line 202 "seman.y"
+#line 205 "seman.y"
     {
           entra_escopo();   /* novo bloco */
       ;}
@@ -1635,7 +1645,7 @@ yyreduce:
   case 20:
 
 /* Line 1455 of yacc.c  */
-#line 206 "seman.y"
+#line 209 "seman.y"
     {
           sai_escopo();     /* fecha bloco */
       ;}
@@ -1644,7 +1654,7 @@ yyreduce:
   case 35:
 
 /* Line 1455 of yacc.c  */
-#line 247 "seman.y"
+#line 250 "seman.y"
     {
           /* return fora de função */
           if (tipo_funcao_atual == -1) {
@@ -1667,7 +1677,7 @@ yyreduce:
   case 36:
 
 /* Line 1455 of yacc.c  */
-#line 265 "seman.y"
+#line 268 "seman.y"
     {
           /* return fora de função */
           if (tipo_funcao_atual == -1) {
@@ -1692,7 +1702,7 @@ yyreduce:
   case 39:
 
 /* Line 1455 of yacc.c  */
-#line 294 "seman.y"
+#line 297 "seman.y"
     {
             if(busca_simbolo((yyvsp[(1) - (1)].id)) == NULL){
                 fprintf(stderr, "ERRO SEMANTICO: variavel '%s' nao declarada - LINHA: %d\n", (yyvsp[(1) - (1)].id), lineno);
@@ -1704,7 +1714,7 @@ yyreduce:
   case 40:
 
 /* Line 1455 of yacc.c  */
-#line 301 "seman.y"
+#line 304 "seman.y"
     {
             Simbolo *sim = busca_simbolo((yyvsp[(1) - (4)].id));
             if(sim == NULL){
@@ -1723,7 +1733,7 @@ yyreduce:
   case 61:
 
 /* Line 1455 of yacc.c  */
-#line 359 "seman.y"
+#line 362 "seman.y"
     {
             Simbolo *sim = busca_simbolo((yyvsp[(1) - (4)].id));
             if(sim == NULL){
@@ -1742,7 +1752,7 @@ yyreduce:
 
 
 /* Line 1455 of yacc.c  */
-#line 1746 "seman.tab.c"
+#line 1756 "seman.tab.c"
       default: break;
     }
   YY_SYMBOL_PRINT ("-> $$ =", yyr1[yyn], &yyval, &yyloc);
@@ -1954,7 +1964,7 @@ yyreturn:
 
 
 /* Line 1675 of yacc.c  */
-#line 384 "seman.y"
+#line 387 "seman.y"
 
 
 /* Tabela de Símbolos */
@@ -2072,5 +2082,5 @@ int main(int argc, char **argv){
 }
 
 void yyerror(const char *s) {
-    fprintf(stderr, "Erro Semântico: %s\n", s);
+    fprintf(stderr, "Erro Semantico: %s\n", s);
 }

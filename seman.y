@@ -13,12 +13,6 @@
 
 %code requires {
 
-static Escopo *escopo_atual = NULL;
-static Tipo tipo_funcao_atual = -1; /* fora de função */
-static int funcao_tem_retorno;
-static int ultima_funcao_eh_main = 0;
-static int main_tem_parametros = 0;
-
 typedef enum {
     TIPO_INT,
     TIPO_VOID
@@ -55,6 +49,15 @@ void insere_simbolo(char *nome, Tipo tipo, Classe classe, int tamanho);
 
 Simbolo *busca_simbolo(char *nome);
 void imprime_tabela(void);
+
+}
+
+%code {
+static Escopo *escopo_atual = NULL;
+static int tipo_funcao_atual = -1; /* -1 = fora de função */
+static int funcao_tem_retorno;
+static int ultima_funcao_eh_main = 0;
+static int main_tem_parametros = 0;
 }
 
 %union {
@@ -498,5 +501,5 @@ int main(int argc, char **argv){
 }
 
 void yyerror(const char *s) {
-    fprintf(stderr, "Erro Semântico: %s\n", s);
+    fprintf(stderr, "Erro Semantico: %s\n", s);
 }

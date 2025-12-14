@@ -38,12 +38,6 @@
 #line 14 "seman.y"
 
 
-static Escopo *escopo_atual = NULL;
-static Tipo tipo_funcao_atual = -1; /* fora de função */
-static int funcao_tem_retorno;
-static int ultima_funcao_eh_main = 0;
-static int main_tem_parametros = 0;
-
 typedef enum {
     TIPO_INT,
     TIPO_VOID
@@ -83,8 +77,9 @@ void imprime_tabela(void);
 
 
 
+
 /* Line 1676 of yacc.c  */
-#line 88 "seman.tab.h"
+#line 83 "seman.tab.h"
 
 /* Tokens.  */
 #ifndef YYTOKENTYPE
@@ -130,7 +125,7 @@ typedef union YYSTYPE
 {
 
 /* Line 1676 of yacc.c  */
-#line 60 "seman.y"
+#line 63 "seman.y"
 
     int num;
     char *id;
@@ -139,7 +134,7 @@ typedef union YYSTYPE
 
 
 /* Line 1676 of yacc.c  */
-#line 143 "seman.tab.h"
+#line 138 "seman.tab.h"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
