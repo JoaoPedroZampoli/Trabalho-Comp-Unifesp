@@ -56,8 +56,57 @@ AST* newRelopNode(char* op, AST* left, AST* right);
 void printAST(AST* tree, int indent);
 void freeAST(AST* node);
 
-/* Variável global para a raiz da AST */
 AST* arvoreSintatica = NULL;
+
+/* operações nas quádruplas */
+typedef enum {
+    OP_ADD,         /* t = a + b */
+    OP_SUB,         /* t = a - b */
+    OP_MUL,         /* t = a * b */
+    OP_DIV,         /* t = a / b */
+    OP_ASSIGN,      /* t = a */
+    OP_ASSIGN_ARR,  /* t[i] = a */
+    OP_ARR_ACCESS,  /* t = a[i] */
+    OP_LT,          /* t = a < b */
+    OP_LE,          /* t = a <= b */
+    OP_GT,          /* t = a > b */
+    OP_GE,          /* t = a >= b */
+    OP_EQ,          /* t = a == b */
+    OP_NE,          /* t = a != b */
+    OP_LABEL,       /* L: */
+    OP_GOTO,        /* goto L */
+    OP_IF_FALSE,    /* if_false a goto L */
+    OP_IF_TRUE,     /* if_true a goto L */
+    OP_PARAM,       /* param a */
+    OP_CALL,        /* t = call f, n */
+    OP_RETURN,      /* return a */
+    OP_FUNC_START,  /* início de função */
+    OP_FUNC_END,    /* fim de função */
+    OP_HALT         /* halt (fim do programa) */
+} QuadOp;
+
+typedef struct Quadruplas {
+    QuadOp op;
+    char* arg1;
+    char* arg2;
+    char* result;
+    struct Quadruplas* next;
+} Quadruplas;
+
+Quadruplas* quadList = NULL;
+Quadruplas* quadTail = NULL;
+
+int tempCount = 0;
+int labelCount = 0;
+
+/* Protótipos das funções de código intermediário */
+char* newTemp(void);
+char* newLabel(void);
+void emit(QuadOp op, char* arg1, char* arg2, char* result);
+void printQuadruplass(void);
+char* genCode(AST* node);
+const char* quadOpToString(QuadOp op);
+
 %}
 
 %union {
@@ -742,12 +791,363 @@ void generateDotFile(AST* tree, const char* filename) {
     fclose(fp);
     
     printf("Arquivo GraphViz gerado: %s\n", filename);
-    printf("Para visualizar, execute:\n");
-    printf("  dot -Tpng %s -o arvore.png\n", filename);
-    printf("  dot -Tsvg %s -o arvore.svg\n", filename);
+    printf("execute:  dot -Tpng %s -o arvore.png\n", filename);
 }
 
-/* --- Função main --- */
+/* FUNÇÕES DE CÓDIGO INTERMEDIÁRIO */
+
+char* newTemp(void) {
+    char* temp = (char*) malloc(16);
+    sprintf(temp, "t%d", tempCount++);
+    return temp;
+}
+
+char* newLabel(void) {
+    char* label = (char*) malloc(16);
+    sprintf(label, "L%d", labelCount++);
+    return label;
+}
+
+void emit(QuadOp op, char* arg1, char* arg2, char* result) {
+    Quadruplas* quad = (Quadruplas*) malloc(sizeof(Quadruplas));
+    quad->op = op;
+    quad->arg1 = arg1 ? strdup(arg1) : NULL;
+    quad->arg2 = arg2 ? strdup(arg2) : NULL;
+    quad->result = result ? strdup(result) : NULL;
+    quad->next = NULL;
+    
+    if (quadList == NULL) {
+        quadList = quad;
+        quadTail = quad;
+    } else {
+        quadTail->next = quad;
+        quadTail = quad;
+    }
+}
+
+const char* quadOpToString(QuadOp op) {
+    switch (op) {
+        case OP_ADD: return "+";
+        case OP_SUB: return "-";
+        case OP_MUL: return "*";
+        case OP_DIV: return "/";
+        case OP_ASSIGN: return "=";
+        case OP_ASSIGN_ARR: return "[]=";
+        case OP_ARR_ACCESS: return "=[]";
+        case OP_LT: return "<";
+        case OP_LE: return "<=";
+        case OP_GT: return ">";
+        case OP_GE: return ">=";
+        case OP_EQ: return "==";
+        case OP_NE: return "!=";
+        case OP_LABEL: return "label";
+        case OP_GOTO: return "goto";
+        case OP_IF_FALSE: return "if_false";
+        case OP_IF_TRUE: return "if_true";
+        case OP_PARAM: return "param";
+        case OP_CALL: return "call";
+        case OP_RETURN: return "return";
+        case OP_FUNC_START: return "func_start";
+        case OP_FUNC_END: return "func_end";
+        case OP_HALT: return "halt";
+        default: return "???";
+    }
+}
+
+void printQuadruplass(void) {
+    printf("\n--- CODIGO INTERMEDIARIO (3 ENDERECOS) ---\n\n");
+    int lineNum = 0;
+    Quadruplas* q = quadList;
+    
+    while (q != NULL) {
+        printf("%3d: ", lineNum++);
+        
+        switch (q->op) {
+            /* Operações aritméticas */
+            case OP_ADD:
+            case OP_SUB:
+            case OP_MUL:
+            case OP_DIV:
+            /* Operações relacionais */
+            case OP_LT:
+            case OP_LE:
+            case OP_GT:
+            case OP_GE:
+            case OP_EQ:
+            case OP_NE:
+                printf("%s = %s %s %s\n", q->result, q->arg1, quadOpToString(q->op), q->arg2);
+                break;
+                
+            case OP_ASSIGN:
+                printf("%s = %s\n", q->result, q->arg1);
+                break;
+                
+            case OP_ASSIGN_ARR:
+                printf("%s[%s] = %s\n", q->result, q->arg1, q->arg2);
+                break;
+                
+            case OP_ARR_ACCESS:
+                printf("%s = %s[%s]\n", q->result, q->arg1, q->arg2);
+                break;
+                
+            case OP_LABEL:
+                printf("%s:\n", q->result);
+                break;
+                
+            case OP_GOTO:
+                printf("goto %s\n", q->result);
+                break;
+                
+            case OP_IF_FALSE:
+                printf("if_false %s goto %s\n", q->arg1, q->result);
+                break;
+                
+            case OP_IF_TRUE:
+                printf("if_true %s goto %s\n", q->arg1, q->result);
+                break;
+                
+            case OP_PARAM:
+                printf("param %s\n", q->arg1);
+                break;
+                
+            case OP_CALL:
+                if (q->result != NULL)
+                    printf("%s = call %s, %s\n", q->result, q->arg1, q->arg2);
+                else
+                    printf("call %s, %s\n", q->arg1, q->arg2);
+                break;
+                
+            case OP_RETURN:
+                if (q->arg1 != NULL)
+                    printf("return %s\n", q->arg1);
+                else
+                    printf("return\n");
+                break;
+                
+            case OP_FUNC_START:
+                printf("func_start %s\n", q->result);
+                break;
+                
+            case OP_FUNC_END:
+                printf("func_end %s\n", q->result);
+                break;
+                
+            case OP_HALT:
+                printf("halt\n");
+                break;
+                
+            default:
+                printf("???\n");
+        }
+        q = q->next;
+    }
+    printf("\n");
+}
+
+
+static int countArgs(AST* argList) {
+    int count = 0;
+    AST* arg = argList;
+    while (arg != NULL) {
+        count++;
+        arg = arg->irmao;
+    }
+    return count;
+}
+
+static void genArgs(AST* argList) {
+    if (argList == NULL) return;
+    
+    AST* arg = argList;
+    while (arg != NULL) {
+        char* argVal = genCode(arg);
+        emit(OP_PARAM, argVal, NULL, NULL);
+        arg = arg->irmao;
+    }
+}
+
+char* genCode(AST* node) {
+    if (node == NULL) return NULL;
+    
+    char* t1;
+    char* t2;
+    char* temp;
+    char* label1;
+    char* label2;
+    char numStr[32];
+    
+    switch (node->type) {
+        case NODE_PROGRAM:
+            {
+                AST* decl = node;
+                while (decl != NULL) {
+                    genCode(decl);
+                    decl = decl->irmao;
+                }
+            }
+            emit(OP_HALT, NULL, NULL, NULL);
+            return NULL;
+            
+        case NODE_VAR_DECL:
+        case NODE_ARRAY_DECL:
+        case NODE_TYPE_INT:
+        case NODE_TYPE_VOID:
+            /* Declarações de variáveis não geram código no intermediário */
+            if (node->irmao != NULL)
+                genCode(node->irmao);
+            return NULL;
+            
+        case NODE_FUN_DECL:
+            emit(OP_FUNC_START, NULL, NULL, node->data.name);
+            genCode(node->filhos[2]);
+            emit(OP_FUNC_END, NULL, NULL, node->data.name);
+
+            if (node->irmao != NULL)
+                genCode(node->irmao);
+            return NULL;
+            
+        case NODE_PARAM:
+        case NODE_ARRAY_PARAM:
+            return NULL;
+            
+        case NODE_COMPOUND:
+            genCode(node->filhos[0]);
+            genCode(node->filhos[1]);
+            return NULL;
+            
+        case NODE_IF:
+            t1 = genCode(node->filhos[0]);  /* condição */
+            label1 = newLabel();
+            emit(OP_IF_FALSE, t1, NULL, label1);
+            genCode(node->filhos[1]);  /* then */
+            if (node->filhos[2] != NULL) {
+                label2 = newLabel();
+                emit(OP_GOTO, NULL, NULL, label2);
+                emit(OP_LABEL, NULL, NULL, label1);
+                genCode(node->filhos[2]);  /* else */
+                emit(OP_LABEL, NULL, NULL, label2);
+            } else {
+                emit(OP_LABEL, NULL, NULL, label1);
+            }
+
+            if (node->irmao != NULL)
+                genCode(node->irmao);
+            return NULL;
+            
+        case NODE_WHILE:
+            label1 = newLabel();  /* início do loop */
+            label2 = newLabel();  /* fim do loop */
+            emit(OP_LABEL, NULL, NULL, label1);
+            t1 = genCode(node->filhos[0]);  /* condição */
+            emit(OP_IF_FALSE, t1, NULL, label2);
+            genCode(node->filhos[1]);  /* corpo */
+            emit(OP_GOTO, NULL, NULL, label1);
+            emit(OP_LABEL, NULL, NULL, label2);
+
+            if (node->irmao != NULL)
+                genCode(node->irmao);
+            return NULL;
+            
+        case NODE_RETURN:
+            if (node->filhos[0] != NULL) {
+                t1 = genCode(node->filhos[0]);
+                emit(OP_RETURN, t1, NULL, NULL);
+            } else {
+                emit(OP_RETURN, NULL, NULL, NULL);
+            }
+
+            if (node->irmao != NULL)
+                genCode(node->irmao);
+            return NULL;
+            
+        case NODE_ASSIGN:
+            t1 = genCode(node->filhos[1]);  /* expressão */
+            
+            if (node->filhos[0]->type == NODE_ARRAY_ACCESS) {
+                /* Atribuição a array: var[idx] = expr */
+                char* idx = genCode(node->filhos[0]->filhos[0]);
+                emit(OP_ASSIGN_ARR, idx, t1, node->filhos[0]->data.name);
+            } else {
+                /* Atribuição simples: var = expr */
+                emit(OP_ASSIGN, t1, NULL, node->filhos[0]->data.name);
+            }
+
+            if (node->irmao != NULL)
+                genCode(node->irmao);
+            return t1;
+            
+        case NODE_OP:
+            t1 = genCode(node->filhos[0]);
+            t2 = genCode(node->filhos[1]);
+            temp = newTemp();
+            
+            switch (node->data.op) {
+                case '+':
+                    emit(OP_ADD, t1, t2, temp);
+                    break;
+                case '-':
+                    emit(OP_SUB, t1, t2, temp);
+                    break;
+                case '*':
+                    emit(OP_MUL, t1, t2, temp);
+                    break;
+                case '/':
+                    emit(OP_DIV, t1, t2, temp);
+                    break;
+            }
+            return temp;
+            
+        case NODE_RELOP:
+            t1 = genCode(node->filhos[0]);
+            t2 = genCode(node->filhos[1]);
+            temp = newTemp();
+            
+            if (strcmp(node->data.relop, "<") == 0)
+                emit(OP_LT, t1, t2, temp);
+            else if (strcmp(node->data.relop, "<=") == 0)
+                emit(OP_LE, t1, t2, temp);
+            else if (strcmp(node->data.relop, ">") == 0)
+                emit(OP_GT, t1, t2, temp);
+            else if (strcmp(node->data.relop, ">=") == 0)
+                emit(OP_GE, t1, t2, temp);
+            else if (strcmp(node->data.relop, "==") == 0)
+                emit(OP_EQ, t1, t2, temp);
+            else if (strcmp(node->data.relop, "!=") == 0)
+                emit(OP_NE, t1, t2, temp);
+            
+            return temp;
+            
+        case NODE_VAR:
+            return strdup(node->data.name);
+            
+        case NODE_ARRAY_ACCESS:
+            t1 = genCode(node->filhos[0]);  /* índice */
+            temp = newTemp();
+            emit(OP_ARR_ACCESS, node->data.name, t1, temp);
+            return temp;
+            
+        case NODE_CALL:
+            /* Gera código para os argumentos */
+            genArgs(node->filhos[0]);
+            /* Conta argumentos */
+            sprintf(numStr, "%d", countArgs(node->filhos[0]));
+            /* Gera chamada */
+            temp = newTemp();
+            emit(OP_CALL, node->data.name, numStr, temp);
+            return temp;
+            
+        case NODE_NUM:
+            sprintf(numStr, "%d", node->data.num);
+            return strdup(numStr);
+            
+        default:
+            if (node->irmao != NULL)
+                genCode(node->irmao);
+            return NULL;
+    }
+}
+
+/* Função main */
 
 int main(int argc, char** argv) {
     if (argc > 1) {
@@ -757,35 +1157,22 @@ int main(int argc, char** argv) {
             return 1;
         }
     } else {
-        printf("Uso: %s <arquivo.cm> [-dot]\n", argv[0]);
-        printf("  -dot  Gera arquivo arvore.dot para GraphViz\n");
+        printf("Uso: %s <arquivo.cm>\n", argv[0]);
         return 1;
     }
 
     printf("Compilador C-\n");
-    printf("Analisando arquivo: %s\n\n", argv[1]);
+    printf("Compilando arquivo: %s\n\n", argv[1]);
 
     int result = yyparse();
     
-    if (result == 0) {
-        printf("=== Análise Sintática concluída com sucesso! ===\n\n");
+    if (result == 0) {        
+        generateDotFile(arvoreSintatica, "arvore.dot");
+        printf("\n");
         
-        /* Verifica se deve gerar arquivo .dot */
-        int generateDot = 0;
-        for (int i = 2; i < argc; i++) {
-            if (strcmp(argv[i], "-dot") == 0) {
-                generateDot = 1;
-                break;
-            }
-        }
-        
-        if (generateDot) {
-            generateDotFile(arvoreSintatica, "arvore.dot");
-            printf("\n");
-        }
-        
-        printf("=== Árvore Sintática Abstrata (AST) ===\n\n");
-        printAST(arvoreSintatica, 0);
+        /* gera código intermediário */
+        genCode(arvoreSintatica);
+        printQuadruplass();
     } else {
         printf("=== Análise Sintática falhou! ===\n");
     }
