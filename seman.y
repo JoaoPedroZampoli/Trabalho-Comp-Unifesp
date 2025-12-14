@@ -7,17 +7,17 @@
     extern int yyparse(void);
     extern FILE *yyin;
     extern int lineno;
-    static Escopo *escopo_atual = NULL;
-    static Tipo tipo_funcao_atual = -1; /* fora de função */
-    static int funcao_tem_retorno;
-    static int ultima_funcao_eh_main = 0;
-    static int main_tem_parametros = 0;
-
 
     void yyerror(const char *s);
 %}
 
 %code requires {
+
+static Escopo *escopo_atual = NULL;
+static Tipo tipo_funcao_atual = -1; /* fora de função */
+static int funcao_tem_retorno;
+static int ultima_funcao_eh_main = 0;
+static int main_tem_parametros = 0;
 
 typedef enum {
     TIPO_INT,

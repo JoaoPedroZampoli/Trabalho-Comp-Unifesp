@@ -45,14 +45,14 @@ whitespace  [ \t]+
 "{"             { return LEFTBRACE; }
 "}"             { return RIGHTBRACE; }
 
-{number}        {
-                  yylval.val = atoi(yytext);
+{number}        { 
+                  yylval.num = atoi(yytext); 
                   return NUM;
                 }
 
-{identifier}    {
-                  yylval.name = strdup(yytext);
-                  return ID;
+{identifier}    { 
+                  yylval.id  = strdup(yytext); 
+                  return ID; 
                 }
 
 {newline}       { lineno++; }
