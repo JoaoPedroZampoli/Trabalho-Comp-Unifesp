@@ -3,4 +3,7 @@
 
 #define MAXTOKENLEN 200
 
+/* Variável de linha do scanner */
+extern int lineno;
+
 #endif
