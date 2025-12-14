@@ -195,7 +195,7 @@ param
                 // fprintf(stderr, "Parâmetro array '%s' não pode ser do tipo void.\n", $2);
                 exit(1);
             }
-            insere_simbolo($2, $1, SIMP_PARAM, 0); /* tamanho 0 para parâmetro array */
+            insere_simbolo($2, $1, SIMP_ARRAY, 0); /* tamanho 0 para parâmetro array */
         }
     ;
 

@@ -1629,7 +1629,7 @@ yyreduce:
                 // fprintf(stderr, "Parâmetro array '%s' não pode ser do tipo void.\n", $2);
                 exit(1);
             }
-            insere_simbolo((yyvsp[(2) - (4)].id), (yyvsp[(1) - (4)].tipo), SIMP_PARAM, 0); /* tamanho 0 para parâmetro array */
+            insere_simbolo((yyvsp[(2) - (4)].id), (yyvsp[(1) - (4)].tipo), SIMP_ARRAY, 0); /* tamanho 0 para parâmetro array */
         ;}
     break;
 
