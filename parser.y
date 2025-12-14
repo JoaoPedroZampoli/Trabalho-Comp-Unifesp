@@ -61,13 +61,13 @@ AST* arvoreSintatica = NULL;
 %}
 
 %union {
-  int val; 
-  char* name; 
+  int num; 
+  char* id; 
   struct AST* node;
 }
 
-%token <val> NUM
-%token <name> ID
+%token <num> NUM
+%token <id> ID
 %token ELSE IF INT RETURN VOID WHILE
 %token PLUS MINUS TIMES DIV
 %token LESSTHAN LESSEQUAL GREATERTHAN GREATEREQUAL EQUAL NOTEQUAL
