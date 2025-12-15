@@ -1,4 +1,4 @@
-# Trabalho-Comp-Unifesp
+# Trabalho Final de Compiladores - Unifesp
 
 Compilador para a linguagem C- (citada no Livro "Compiladores - Princípios e Práticas" de Kenneth C. Louden), implementado em C utilizando Flex e Bison
 **Disciplina:** Compiladores - Unifesp (Universidade Federal de São Paulo).
