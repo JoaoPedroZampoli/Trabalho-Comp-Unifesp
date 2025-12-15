@@ -32,54 +32,6 @@
    This special exception was added by the Free Software Foundation in
    version 2.2 of Bison.  */
 
-/* "%code requires" blocks.  */
-
-/* Line 1676 of yacc.c  */
-#line 14 "seman.y"
-
-
-typedef enum {
-    TIPO_INT,
-    TIPO_VOID
-} Tipo;
-
-typedef enum {
-    SIMP_VAR,
-    SIMP_ARRAY,
-    SIMP_FUNC,
-    SIMP_PARAM
-} Classe;
-
-/* entrada da tabela de símbolos */
-typedef struct Simbolo {
-    char *nome;
-    Tipo tipo;
-    Classe classe;
-    int lineno; 
-    int tamanho;              /* array: NUM | 0 caso contrário */
-    struct Simbolo *prox;
-} Simbolo;
-
-/* escopo (pilha) */
-typedef struct Escopo {
-    Simbolo *simbolos;
-    struct Escopo *pai;
-} Escopo;
-
-/* interface da tabela de símbolos */
-void entra_escopo(void);
-void sai_escopo(void);
-
-void insere_simbolo(char *nome, Tipo tipo, Classe classe, int tamanho);
-
-Simbolo *busca_simbolo(char *nome);
-void imprime_tabela(void);
-
-
-
-
-/* Line 1676 of yacc.c  */
-#line 83 "seman.tab.h"
 
 /* Tokens.  */
 #ifndef YYTOKENTYPE
@@ -87,34 +39,35 @@ void imprime_tabela(void);
    /* Put the tokens into the symbol table, so that GDB and other debuggers
       know about them.  */
    enum yytokentype {
-     IF = 258,
-     ELSE = 259,
-     WHILE = 260,
-     RETURN = 261,
+     NUM = 258,
+     ID = 259,
+     ELSE = 260,
+     IF = 261,
      INT = 262,
-     VOID = 263,
-     PLUS = 264,
-     MINUS = 265,
-     TIMES = 266,
-     DIV = 267,
-     LESSTHAN = 268,
-     LESSEQUAL = 269,
-     GREATERTHAN = 270,
-     GREATEREQUAL = 271,
-     EQUAL = 272,
-     NOTEQUAL = 273,
-     ASSIGN = 274,
-     SEMICOLON = 275,
-     COMMA = 276,
-     LEFTPAREN = 277,
-     RIGHTPAREN = 278,
-     LEFTBRACE = 279,
-     RIGHTBRACE = 280,
+     RETURN = 263,
+     VOID = 264,
+     WHILE = 265,
+     PLUS = 266,
+     MINUS = 267,
+     TIMES = 268,
+     DIV = 269,
+     LESSTHAN = 270,
+     LESSEQUAL = 271,
+     GREATERTHAN = 272,
+     GREATEREQUAL = 273,
+     EQUAL = 274,
+     NOTEQUAL = 275,
+     ASSIGN = 276,
+     SEMICOLON = 277,
+     COMMA = 278,
+     LEFTPAREN = 279,
+     RIGHTPAREN = 280,
      LEFTBRACKET = 281,
      RIGHTBRACKET = 282,
-     ERROR = 283,
-     ID = 284,
-     NUM = 285
+     LEFTBRACE = 283,
+     RIGHTBRACE = 284,
+     ERROR = 285,
+     LOWER_THAN_ELSE = 286
    };
 #endif
 
@@ -125,16 +78,16 @@ typedef union YYSTYPE
 {
 
 /* Line 1676 of yacc.c  */
-#line 63 "seman.y"
+#line 114 "parser.y"
 
-    int num;
-    char *id;
-    Tipo tipo;
+  int num; 
+  char* id; 
+  struct AST* node;
 
 
 
 /* Line 1676 of yacc.c  */
-#line 138 "seman.tab.h"
+#line 91 "parser.tab.h"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */

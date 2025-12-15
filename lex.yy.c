@@ -400,11 +400,12 @@ char *yytext;
 #line 2 "scanner.l"
 #include <string.h>
 #include "globals.h"
-#include "seman.tab.h"
+#include "parser.tab.h"
 
 int lineno = 1;
 char tokenString[MAXTOKENLEN+1];
 /* Declarando as palavras reservadas e tokens*/
+#line 409 "lex.yy.c"
 
 /* Macros after this point can all be overridden by user definitions in
  * section 1.
@@ -558,6 +559,7 @@ YY_DECL
 #line 18 "scanner.l"
 
 
+#line 563 "lex.yy.c"
 
 	if ( yy_init )
 		{
@@ -820,6 +822,7 @@ YY_RULE_SETUP
 #line 80 "scanner.l"
 ECHO;
 	YY_BREAK
+#line 826 "lex.yy.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 

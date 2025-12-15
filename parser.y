@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "symbol_table.h"
+#include "semantic.h"
 
 extern int yylex();
 extern int yyparse();
@@ -192,6 +194,7 @@ var_declaracao
         }
     ;
 
+
 /* 5. tipo-especificador → int | void */
 tipo_especificador
     : INT
@@ -211,6 +214,7 @@ fun_declaracao
             $$->filhos[2] = $6;
         }
     ;
+
 
 /* 7. params → param-lista | void */
 params
@@ -253,6 +257,7 @@ param
         }
     ;
 
+
 /* 10. composto-decl → { local-declarações statement-lista } */
 composto_decl
     : LEFTBRACE local_declaracoes statement_lista RIGHTBRACE
@@ -262,6 +267,7 @@ composto_decl
             $$->filhos[1] = $3;
         }
     ;
+
 
 /* 11. local-declarações → local-declarações var-declaração | vazio */
 local_declaracoes
@@ -1134,6 +1140,10 @@ char* genCode(AST* node) {
             /* Gera chamada */
             temp = newTemp();
             emit(OP_CALL, node->data.name, numStr, temp);
+
+            if (node->irmao != NULL)
+                genCode(node->irmao);
+            
             return temp;
             
         case NODE_NUM:
@@ -1170,13 +1180,17 @@ int main(int argc, char** argv) {
         generateDotFile(arvoreSintatica, "arvore.dot");
         printf("\n");
         
+        semanticAnalysis(arvoreSintatica);
+
+
         /* gera código intermediário */
         genCode(arvoreSintatica);
         printQuadruplass();
+        imprime_tabela();
     } else {
         printf("=== Análise Sintática falhou! ===\n");
     }
-
+    sai_escopo();
     freeAST(arvoreSintatica);
     fclose(yyin);
     

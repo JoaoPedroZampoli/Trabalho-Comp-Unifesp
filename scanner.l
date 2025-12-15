@@ -1,7 +1,7 @@
 %{
 #include <string.h>
 #include "globals.h"
-#include "seman.tab.h"
+#include "parser.tab.h"
 
 int lineno = 1;
 char tokenString[MAXTOKENLEN+1];
