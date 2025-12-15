@@ -21,3 +21,10 @@ gcc -Wall -g parser.tab.c lex.yy.c semantic.c -o compilador.exe
 
 4️⃣ Rodar o compilador:
 ./compilador.exe teste.c
+
+
+
+- $env:BISON_PKGDATADIR="C:\FLEXWI~1\Bison\share\bison"
+- bison -d parser.y
+- flex scanner.l
+- gcc -Wall -g parser.tab.c lex.yy.c semantic.c symbol_table.c -o compilador.exe
