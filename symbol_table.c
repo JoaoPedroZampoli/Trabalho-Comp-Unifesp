@@ -52,7 +52,7 @@ void insere_simbolo(char *nome, Tipo tipo, Classe classe, int tamanho, int linha
     for(Simbolo *sim = escopo_atual->simbolos; sim != NULL; sim = sim->prox){
         if(strcmp(sim->nome, nome) == 0){
             /* fprintf(stderr, "Erro: símbolo '%s' já declarado neste escopo.\n", nome); // Talvez tirar daqui e só deixar o YYERROR? */
-            fprintf(stderr, "ERRO SEMANTICO: identificador '%s' ja declarado neste escopo - LINHA: %d\n", nome, linha);
+            fprintf(stderr, "ERRO SEMANTICO: identificador '%s' ja declarado neste escopo - LINHA: %d\n", nome, linha_val);
             exit(1);
         }
     }
