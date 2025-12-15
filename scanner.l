@@ -3,7 +3,7 @@
 #include "globals.h"
 #include "parser.tab.h"
 
-int lineno = 1;
+int linha = 1;
 char tokenString[MAXTOKENLEN+1];
 char lastToken[MAXTOKENLEN+1] = "";
 %}
@@ -59,24 +59,24 @@ whitespace  [ \t]+
                   return ID; 
                 }
 
-{newline}       { lineno++; }
+{newline}       { linha++; }
 {whitespace}    { /* pular espaço em branco */ }
 
 "/*"            {
                   char c;
-                  int comment_line = lineno;
+                  int comment_line = linha;
                   do {
                     c = input();
                     if (c == EOF) {
                       fprintf(stderr, "ERRO LEXICO: comentario nao fechado - LINHA: %d\n", comment_line);
                       return ERROR;
                     }
-                    if (c == '\n') lineno++;
+                    if (c == '\n') linha++;
                   } while (c != '*' || (c = input()) != '/');
                 }
 
 .               {
-                  fprintf(stderr, "ERRO LEXICO: '%s' - LINHA: %d\n", yytext, lineno);
+                  fprintf(stderr, "ERRO LEXICO: '%s' - LINHA: %d\n", yytext, linha);
                   return ERROR;
                 }
 

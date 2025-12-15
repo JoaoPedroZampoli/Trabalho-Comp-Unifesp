@@ -8,7 +8,7 @@
 extern int yylex();
 extern int yyparse();
 extern FILE* yyin;
-extern int lineno;
+extern int linha;
 extern char lastToken[];
 
 void yyerror(const char* s);
@@ -49,7 +49,7 @@ typedef struct AST {
     } data;
     struct AST* filhos[4];     // filhos (até 4: tipo, nome, params, corpo, etc.)
     struct AST* irmao;         // irmão (para listas de elementos como declarações, argumentos, etc.)
-    int lineno;               // linha no código fonte
+    int linha;               // linha no código fonte
 } AST;
 
 /* --- PROTÓTIPOS DA AST --- */
@@ -57,7 +57,7 @@ AST* newNode(NodeType type);
 AST* newNumNode(int val);
 AST* newIdNode(char* name);
 AST* newOpNode(char op, AST* left, AST* right);
-AST* newRelopNode(char* op, AST* left, AST* right);
+AST* newRelNode(char* op, AST* left, AST* right);
 void printAST(AST* tree, int indent);
 void freeAST(AST* node);
 
@@ -133,14 +133,12 @@ const char* quadOpToString(QuadOp op);
 %token LEFTPAREN RIGHTPAREN LEFTBRACKET RIGHTBRACKET LEFTBRACE RIGHTBRACE
 %token ERROR
 
-/* Precedência e associatividade */
 %nonassoc LOWER_THAN_ELSE
 %nonassoc ELSE
 %left LESSTHAN LESSEQUAL GREATERTHAN GREATEREQUAL EQUAL NOTEQUAL
 %left PLUS MINUS
 %left TIMES DIV
 
-/* Tipos dos não-terminais */
 %type <node> programa declaracao_lista declaracao var_declaracao fun_declaracao
 %type <node> tipo_especificador params param_lista param composto_decl
 %type <node> local_declaracoes statement_lista statement expressao_decl
@@ -530,7 +528,7 @@ AST* newNode(NodeType type) {
     for (int i = 0; i < 4; i++)
         node->filhos[i] = NULL;
     node->irmao = NULL;
-    node->lineno = lineno;
+    node->linha = linha;
     return node;
 }
 
@@ -554,7 +552,7 @@ AST* newOpNode(char op, AST* left, AST* right) {
     return node;
 }
 
-AST* newRelopNode(char* op, AST* left, AST* right) {
+AST* newRelNode(char* op, AST* left, AST* right) {
     AST* node = newNode(NODE_RELOP);
     node->data.relop = strdup(op);
     node->filhos[0] = left;
@@ -651,105 +649,105 @@ void freeAST(AST* node) {
     free(node);
 }
 
-/*  FUNÇÕES PARA GERAR GRAPHVIZ   */
+/*  FUNÇÕES PARA GERAR GRAPHVIZ  */
 
 static int nodeCounter = 0;
 
 /* Retorna o label do nó baseado no tipo */
-static const char* getNodeLabel(AST* node, char* buffer) {
+static const char* getNodeLabel(AST* node, char* aux) {
     switch (node->type) {
         case NODE_PROGRAM:
-            sprintf(buffer, "Programa");
+            sprintf(aux, "Programa");
             break;
         case NODE_VAR_DECL:
-            sprintf(buffer, "VarDecl\\n%s", node->data.name);
+            sprintf(aux, "VarDecl\\n%s", node->data.name);
             break;
         case NODE_ARRAY_DECL:
-            sprintf(buffer, "ArrayDecl\\n%s", node->data.name);
+            sprintf(aux, "ArrayDecl\\n%s", node->data.name);
             break;
         case NODE_FUN_DECL:
-            sprintf(buffer, "FunDecl\\n%s", node->data.name);
+            sprintf(aux, "FunDecl\\n%s", node->data.name);
             break;
         case NODE_PARAM:
-            sprintf(buffer, "Param\\n%s", node->data.name);
+            sprintf(aux, "Param\\n%s", node->data.name);
             break;
         case NODE_ARRAY_PARAM:
-            sprintf(buffer, "ArrayParam\\n%s[]", node->data.name);
+            sprintf(aux, "ArrayParam\\n%s[]", node->data.name);
             break;
         case NODE_COMPOUND:
-            sprintf(buffer, "Bloco\\n{ }");
+            sprintf(aux, "Bloco\\n{ }");
             break;
         case NODE_IF:
-            sprintf(buffer, "If");
+            sprintf(aux, "If");
             break;
         case NODE_WHILE:
-            sprintf(buffer, "While");
+            sprintf(aux, "While");
             break;
         case NODE_RETURN:
-            sprintf(buffer, "Return");
+            sprintf(aux, "Return");
             break;
         case NODE_ASSIGN:
-            sprintf(buffer, "=");
+            sprintf(aux, "=");
             break;
         case NODE_OP:
-            sprintf(buffer, "%c", node->data.op);
+            sprintf(aux, "%c", node->data.op);
             break;
         case NODE_RELOP:
-            sprintf(buffer, "%s", node->data.relop);
+            sprintf(aux, "%s", node->data.relop);
             break;
         case NODE_VAR:
-            sprintf(buffer, "Var\\n%s", node->data.name);
+            sprintf(aux, "Var\\n%s", node->data.name);
             break;
         case NODE_ARRAY_ACCESS:
-            sprintf(buffer, "Array\\n%s[]", node->data.name);
+            sprintf(aux, "Array\\n%s[]", node->data.name);
             break;
         case NODE_CALL:
-            sprintf(buffer, "Call\\n%s()", node->data.name);
+            sprintf(aux, "Call\\n%s()", node->data.name);
             break;
         case NODE_NUM:
-            sprintf(buffer, "%d", node->data.num);
+            sprintf(aux, "%d", node->data.num);
             break;
         case NODE_TYPE_INT:
-            sprintf(buffer, "int");
+            sprintf(aux, "int");
             break;
         case NODE_TYPE_VOID:
-            sprintf(buffer, "void");
+            sprintf(aux, "void");
             break;
         default:
-            sprintf(buffer, "???");
+            sprintf(aux, "?");
             break;
     }
-    return buffer;
+    return aux;
 }
 
 /* Retorna a cor do nó baseado no tipo */
 static const char* getNodeColor(AST* node) {
     switch (node->type) {
         case NODE_FUN_DECL:
-            return "#FFD700";  /* Dourado - funções */
+            return "#FFD700";  /* funções */
         case NODE_VAR_DECL:
         case NODE_ARRAY_DECL:
-            return "#98FB98";  /* Verde claro - declarações */
+            return "#98FB98";  /* declarações */
         case NODE_IF:
         case NODE_WHILE:
-            return "#87CEEB";  /* Azul claro - controle de fluxo */
+            return "#87CEEB";  /* controle de fluxo */
         case NODE_RETURN:
-            return "#FFA07A";  /* Salmão - return */
+            return "#FFA07A";  /* return */
         case NODE_OP:
         case NODE_RELOP:
-            return "#DDA0DD";  /* Lilás - operadores */
+            return "#DDA0DD";  /* operadores */
         case NODE_CALL:
-            return "#F0E68C";  /* Caqui - chamadas */
+            return "#F0E68C";  /* chamadas */
         case NODE_NUM:
-            return "#FFFFFF";  /* Branco - números */
+            return "#FFFFFF";  /* números */
         case NODE_VAR:
         case NODE_ARRAY_ACCESS:
-            return "#E0FFFF";  /* Ciano claro - variáveis */
+            return "#E0FFFF";  /* variáveis */
         case NODE_TYPE_INT:
         case NODE_TYPE_VOID:
-            return "#D3D3D3";  /* Cinza - tipos */
+            return "#D3D3D3";  /* tipos */
         case NODE_COMPOUND:
-            return "#F5F5DC";  /* Bege - blocos */
+            return "#F5F5DC";  /* blocos */
         default:
             return "#FFFFFF";
     }
@@ -760,12 +758,12 @@ static int generateDotNodes(FILE* fp, AST* node) {
     if (node == NULL) return -1;
     
     int myId = nodeCounter++;
-    char labelBuffer[128];
+    char labelaux[128];
     
     fprintf(fp, "  node%d [label=\"%s\", style=filled, fillcolor=\"%s\"];\n",
-            myId, getNodeLabel(node, labelBuffer), getNodeColor(node));
+            myId, getNodeLabel(node, labelaux), getNodeColor(node));
     
-    /* Processa filhos */
+    /* processa filhos */
     for (int i = 0; i < 4; i++) {
         if (node->filhos[i] != NULL) {
             int childId = generateDotNodes(fp, node->filhos[i]);
@@ -773,7 +771,7 @@ static int generateDotNodes(FILE* fp, AST* node) {
         }
     }
     
-    /* Processa irmãos (com seta tracejada) */
+    /* processa irmãos (e coloca seta tracejada) */
     if (node->irmao != NULL) {
         int siblingId = generateDotNodes(fp, node->irmao);
         fprintf(fp, "  node%d -> node%d [style=dashed, color=gray];\n", myId, siblingId);
@@ -782,7 +780,7 @@ static int generateDotNodes(FILE* fp, AST* node) {
     return myId;
 }
 
-/* Gera o arquivo .dot completo */
+/* gera o arquivo .dot  */
 void generateDotFile(AST* tree, const char* filename) {
     FILE* fp = fopen(filename, "w");
     if (fp == NULL) {
@@ -1004,7 +1002,7 @@ char* genCode(AST* node) {
         case NODE_ARRAY_DECL:
         case NODE_TYPE_INT:
         case NODE_TYPE_VOID:
-            /* Declarações de variáveis não geram código no intermediário */
+            /* declarações de variáveis não geram código no intermediário */
             if (node->irmao != NULL)
                 genCode(node->irmao);
             return NULL;
@@ -1139,11 +1137,8 @@ char* genCode(AST* node) {
             return temp;
             
         case NODE_CALL:
-            /* Gera código para os argumentos */
             genArgs(node->filhos[0]);
-            /* Conta argumentos */
             sprintf(numStr, "%d", countArgs(node->filhos[0]));
-            /* Gera chamada */
             temp = newTemp();
             emit(OP_CALL, node->data.name, numStr, temp);
 
@@ -1188,7 +1183,6 @@ int main(int argc, char** argv) {
         
         semanticAnalysis(arvoreSintatica);
 
-
         /* gera código intermediário */
         genCode(arvoreSintatica);
         printQuadruplass();
@@ -1227,14 +1221,14 @@ void yyerror(const char* s) {
             
             if (strlen(tokenEsperado) > 0) {
                 fprintf(stderr, "ERRO SINTATICO: token inesperado '%s', esperado '%s' - LINHA: %d\n", 
-                        tokenInesperado, tokenEsperado, lineno);
+                        tokenInesperado, tokenEsperado, linha);
             } else {
                 fprintf(stderr, "ERRO SINTATICO: token inesperado '%s' - LINHA: %d\n", 
-                        tokenInesperado, lineno);
+                        tokenInesperado, linha);
             }
             return;
         }
     }
     
-    fprintf(stderr, "ERRO SINTATICO: %s - LINHA: %d\n", s, lineno);
+    fprintf(stderr, "ERRO SINTATICO: %s - LINHA: %d\n", s, linha);
 }
