@@ -47,10 +47,11 @@ typedef struct AST {
 /* ===== Variaveis globais ===== */
 
 static Tipo tipo_funcao_atual = TIPO_ERRO;
-static int funcao_tem_return = 0;       /* Flag para verificar se função int tem return */
-static int main_encontrada = 0;          /* Flag para verificar se main existe */
-static int main_linha = 0;              /* Linha da declaração de main */
-static int dentro_funcao = 0;            /* Flag para verificar se estamos dentro de uma função */
+static int funcao_tem_return = 0;
+static int main_encontrada = 0;
+static int main_linha = 0;
+static int dentro_funcao = 0;
+static int escopo_funcao_criado = 0;  /* Flag para evitar escopo duplicado */
 
 /* ===== Prototipacao ===== */
 
@@ -94,7 +95,6 @@ static int isVoidParam(AST* params) {
 void semanticAnalysis(AST* root) {
     entra_escopo();
 
-    /* Insere funções built-in: input() retorna int, output(int) retorna void */
     insere_simbolo("input", TIPO_INT, SIMP_FUNC, 0, 0);
     insere_simbolo("output", TIPO_VOID, SIMP_FUNC, 0, 0);
 
@@ -105,6 +105,16 @@ void semanticAnalysis(AST* root) {
     /* Verifica se main() foi declarada */
     if (!main_encontrada) {
         fprintf(stderr, "ERRO SEMANTICO: funcao 'main' nao declarada\n");
+        exit(1);
+    }
+
+    /* Verifica se main é a última declaração */
+    AST* ultimo = root;
+    while (ultimo->irmao != NULL) {
+        ultimo = ultimo->irmao;
+    }
+    if (ultimo->type != NODE_FUN_DECL || strcmp(ultimo->data.name, "main") != 0) {
+        fprintf(stderr, "ERRO SEMANTICO: 'main' deve ser a ultima declaracao\n");
         exit(1);
     }
 }
@@ -121,17 +131,14 @@ static Tipo checkNode(AST* node) {
             
             insere_simbolo(node->data.name, tipoFunc, SIMP_FUNC, 0, node->linha);
 
-            /* Verifica se é a função main */
             if (strcmp(node->data.name, "main") == 0) {
                 main_encontrada = 1;
                 main_linha = node->linha;
                 
-                /* main deve retornar void */
                 if (tipoFunc != TIPO_VOID) {
                     semanticError("funcao 'main' deve retornar void", node->linha);
                 }
                 
-                /* main deve ter void como parâmetro ou nenhum parâmetro */
                 if (!isVoidParam(node->filhos[1])) {
                     semanticError("funcao 'main' nao deve ter parametros", node->linha);
                 }
@@ -143,13 +150,13 @@ static Tipo checkNode(AST* node) {
             dentro_funcao = 1;
 
             entra_escopo();
+            escopo_funcao_criado = 1;  /* Marca que o escopo da função foi criado */
 
             checkNode(node->filhos[1]); /* params */
             checkNode(node->filhos[2]); /* corpo */
 
             sai_escopo();
 
-            /* Se a função é do tipo int, deve ter pelo menos um return */
             if (tipo_funcao_atual == TIPO_INT && !funcao_tem_return) {
                 semanticError("funcao do tipo 'int' deve ter return", node->linha);
             }
@@ -188,9 +195,17 @@ static Tipo checkNode(AST* node) {
             break;
 
         case NODE_COMPOUND:
-            /* Não criar novo escopo se já estamos entrando na função (escopo já foi criado) */
-            checkNode(node->filhos[0]);
-            checkNode(node->filhos[1]);
+            /* Só cria novo escopo se não for o corpo da função (escopo já criado) */
+            if (escopo_funcao_criado) {
+                escopo_funcao_criado = 0;  /* Reseta a flag */
+                checkNode(node->filhos[0]);
+                checkNode(node->filhos[1]);
+            } else {
+                entra_escopo();
+                checkNode(node->filhos[0]);
+                checkNode(node->filhos[1]);
+                sai_escopo();
+            }
             break;
 
         case NODE_IF:
