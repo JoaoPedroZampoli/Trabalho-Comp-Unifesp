@@ -5,6 +5,7 @@
 
 int lineno = 1;
 char tokenString[MAXTOKENLEN+1];
+char lastToken[MAXTOKENLEN+1] = "";
 %}
 
 /* Declarando as palavras reservadas e tokens*/
@@ -47,12 +48,14 @@ whitespace  [ \t]+
 "}"             { return RIGHTBRACE; }
 
 {number}        { 
-                  yylval.num = atoi(yytext); 
+                  yylval.num = atoi(yytext);
+                  strncpy(lastToken, yytext, MAXTOKENLEN);
                   return NUM;
                 }
 
 {identifier}    { 
-                  yylval.id  = strdup(yytext); 
+                  yylval.id  = strdup(yytext);
+                  strncpy(lastToken, yytext, MAXTOKENLEN);
                   return ID; 
                 }
 

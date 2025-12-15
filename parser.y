@@ -9,8 +9,11 @@ extern int yylex();
 extern int yyparse();
 extern FILE* yyin;
 extern int lineno;
+extern char lastToken[];
 
 void yyerror(const char* s);
+
+int errosSintaticos = 0;
 
 /* --- TIPOS DE NÓS DA AST --- */
 typedef enum {
@@ -116,6 +119,9 @@ const char* quadOpToString(QuadOp op);
   char* id; 
   struct AST* node;
 }
+
+/* mensagens de erro detalhadas */
+%define parse.error verbose
 
 %token <num> NUM
 %token <id> ID
@@ -1176,7 +1182,7 @@ int main(int argc, char** argv) {
 
     int result = yyparse();
     
-    if (result == 0) {        
+    if (result == 0 && errosSintaticos == 0) {        
         generateDotFile(arvoreSintatica, "arvore.dot");
         printf("\n");
         
@@ -1188,7 +1194,7 @@ int main(int argc, char** argv) {
         printQuadruplass();
         imprime_tabela();
     } else {
-        printf("=== Análise Sintática falhou! ===\n");
+        printf("\n--- Compilacao falhou com %d erro(s) sintatico(s) ---\n", errosSintaticos);
     }
     sai_escopo();
     freeAST(arvoreSintatica);
@@ -1200,5 +1206,35 @@ int main(int argc, char** argv) {
 /* Função de erro  */
 
 void yyerror(const char* s) {
-    fprintf(stderr, "ERRO SINTÁTICO: %s - LINHA: %d\n", s, lineno);
+    errosSintaticos++;
+        
+    if (strstr(s, "unexpected") != NULL) {
+        /* Formato: "syntax error, unexpected X, expecting Y" */
+        char* unexpected = strstr(s, "unexpected");
+        char* expecting = strstr(s, "expecting");
+        
+        if (unexpected != NULL) {
+            char tokenInesperado[64] = "";
+            char tokenEsperado[256] = "";
+            
+            sscanf(unexpected, "unexpected %63[^,\n]", tokenInesperado);
+            
+            if (expecting != NULL) {
+                strcpy(tokenEsperado, expecting + 10);
+                char* nl = strchr(tokenEsperado, '\n');
+                if (nl) *nl = '\0';
+            }
+            
+            if (strlen(tokenEsperado) > 0) {
+                fprintf(stderr, "ERRO SINTATICO: token inesperado '%s', esperado '%s' - LINHA: %d\n", 
+                        tokenInesperado, tokenEsperado, lineno);
+            } else {
+                fprintf(stderr, "ERRO SINTATICO: token inesperado '%s' - LINHA: %d\n", 
+                        tokenInesperado, lineno);
+            }
+            return;
+        }
+    }
+    
+    fprintf(stderr, "ERRO SINTATICO: %s - LINHA: %d\n", s, lineno);
 }
