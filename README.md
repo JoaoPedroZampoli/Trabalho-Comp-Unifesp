@@ -2,13 +2,14 @@
 
 
 # Trabalho-Comp-Unifesp
-Compilador simples implementado em C utilizando Flex e Bison, como parte do trabalho da disciplina de Compiladores da Unifesp.
+Compilador para a linguagem C- (citada no Livro "Compiladores - Princípios e Práticas" de Kenneth C. Louden), implementado em C utilizando Flex e Bison
+**Disciplina:** Compiladores - Unifesp (Universidade Federal de São Paulo).
 
 ## Requisitos
-- Flex
-- Bison
-- GCC
-- Make
+- **GCC** (MinGW no Windows)
+- **Flex** (gerador de scanner)
+- **Bison** (gerador de parser)
+- **Graphviz** (opcional, para visualizar AST)
 
 ## Estrutura do Projeto
 - `parser.y`: Arquivo de definição da gramática utilizando Bison.
@@ -17,6 +18,17 @@ Compilador simples implementado em C utilizando Flex e Bison, como parte do trab
 - `symbol_table.c` e `symbol_table.h`: Implementação da tabela de símbolos.
 
 ## Como Compilar e Executar
+
+### Usando Makefile (recomendado)
+
+```bash
+make              # Compila o compilador
+make test         # Executa com arquivo de teste
+make ast          # Gera imagem da AST (requer Graphviz)
+make clean        # Remove arquivos gerados
+```
+
+### Manualmente (Windows PowerShell)
 1. Abra o PowerShell.
 2. Navegue até o diretório do projeto.
 3. Execute os seguintes comandos:
@@ -31,5 +43,15 @@ Compilador simples implementado em C utilizando Flex e Bison, como parte do trab
 - dot -Tpng arvore.dot -o arvore.png
 - dot -Tsvg arvore.dot -o arvore.svg  (alternativa)
 
-## Possível erro:
-Trocar "%define parse.error verbose" por "%error-verbose" no arquivo parser.y para Bison 2.x
+## Possíveis Problemas
+
+- %define parse.error verbose não funciona:	Substituir por %error-verbose
+- dot não reconhecido:	Instalar Graphviz ```winget install Graphviz.Graphviz```
+
+## Exemplos de uso:
+- `teste.c`: Arquivo de exemplo para testar o compilador.
+
+## Referência
+Baseado no projeto de compilador sugerido pelo Apêndice A do livro:
+
+LOUDEN, Kenneth C. Compiladores: Princípios e Práticas. Thomson, 2004.

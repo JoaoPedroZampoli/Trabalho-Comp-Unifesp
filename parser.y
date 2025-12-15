@@ -121,7 +121,9 @@ const char* quadOpToString(QuadOp op);
 }
 
 /* mensagens de erro detalhadas */
-%define parse.error verbose
+%error-verbose
+
+%locations
 
 %token <num> NUM
 %token <id> ID
@@ -209,13 +211,12 @@ tipo_especificador
 
 /* 6. fun-declaração → tipo-especificador ID ( params ) composto-decl */
 fun_declaracao
-    : tipo_especificador ID LEFTPAREN params RIGHTPAREN composto_decl
+    : tipo_especificador ID { $<node>$ = newNode(NODE_FUN_DECL); $<node>$->data.name = $2; } LEFTPAREN params RIGHTPAREN composto_decl
         {
-            $$ = newNode(NODE_FUN_DECL);
+            $$ = $<node>3;
             $$->filhos[0] = $1;
-            $$->data.name = $2;
-            $$->filhos[1] = $4;
-            $$->filhos[2] = $6;
+            $$->filhos[1] = $5;
+            $$->filhos[2] = $7;
         }
     ;
 
