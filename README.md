@@ -28,12 +28,14 @@ make ast          # Gera imagem da AST (requer Graphviz)
 make clean        # Remove arquivos gerados
 ```
 
+Observação:  Pode ser necessário alterar o caminho de instalação do Bison no MakeFile também
+
 ### Manualmente (Windows PowerShell)
 1. Abra o PowerShell.
 2. Navegue até o diretório do projeto.
 3. Execute os seguintes comandos:
 
-- $env:BISON_PKGDATADIR="C:\FLEXWI~1\Bison\share\bison"
+- $env:BISON_PKGDATADIR="C:\FLEXWI~1\Bison\share\bison" ou onde o bison estiver instalado em sua máquina
 - bison -d parser.y
 - flex scanner.l
 - gcc -Wall -g parser.tab.c lex.yy.c semantic.c symbol_table.c -o compilador.exe
