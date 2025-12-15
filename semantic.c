@@ -41,7 +41,7 @@ typedef struct AST {
     } data;
     struct AST* filhos[4];
     struct AST* irmao;
-    int lineno;
+    int linha;
 } AST;
 
 /* ===== Variaveis globais ===== */
@@ -49,15 +49,15 @@ typedef struct AST {
 static Tipo tipo_funcao_atual = TIPO_ERRO;
 static int funcao_tem_return = 0;       /* Flag para verificar se função int tem return */
 static int main_encontrada = 0;          /* Flag para verificar se main existe */
-static int main_lineno = 0;              /* Linha da declaração de main */
+static int main_linha = 0;              /* Linha da declaração de main */
 static int dentro_funcao = 0;            /* Flag para verificar se estamos dentro de uma função */
 
 /* ===== Prototipacao ===== */
 
 static Tipo checkNode(AST* node);
 static Tipo checkExpr(AST* node);
-static void semanticError(const char* msg, int lineno);
-static void semanticErrorId(const char* id, int lineno);
+static void semanticError(const char* msg, int linha);
+static void semanticErrorId(const char* id, int linha);
 static int countParams(AST* params);
 static int isVoidParam(AST* params);
 
@@ -119,21 +119,21 @@ static Tipo checkNode(AST* node) {
         case NODE_FUN_DECL: {
             Tipo tipoFunc = getAstType(node->filhos[0]);
             
-            insere_simbolo(node->data.name, tipoFunc, SIMP_FUNC, 0, node->lineno);
+            insere_simbolo(node->data.name, tipoFunc, SIMP_FUNC, 0, node->linha);
 
             /* Verifica se é a função main */
             if (strcmp(node->data.name, "main") == 0) {
                 main_encontrada = 1;
-                main_lineno = node->lineno;
+                main_linha = node->linha;
                 
                 /* main deve retornar void */
                 if (tipoFunc != TIPO_VOID) {
-                    semanticError("funcao 'main' deve retornar void", node->lineno);
+                    semanticError("funcao 'main' deve retornar void", node->linha);
                 }
                 
                 /* main deve ter void como parâmetro ou nenhum parâmetro */
                 if (!isVoidParam(node->filhos[1])) {
-                    semanticError("funcao 'main' nao deve ter parametros", node->lineno);
+                    semanticError("funcao 'main' nao deve ter parametros", node->linha);
                 }
             }
 
@@ -151,7 +151,7 @@ static Tipo checkNode(AST* node) {
 
             /* Se a função é do tipo int, deve ter pelo menos um return */
             if (tipo_funcao_atual == TIPO_INT && !funcao_tem_return) {
-                semanticError("funcao do tipo 'int' deve ter return", node->lineno);
+                semanticError("funcao do tipo 'int' deve ter return", node->linha);
             }
 
             tipo_funcao_atual = TIPO_ERRO;
@@ -161,30 +161,30 @@ static Tipo checkNode(AST* node) {
 
         case NODE_PARAM:
             if (getAstType(node->filhos[0]) == TIPO_VOID) {
-                semanticError("parametro nao pode ser do tipo void", node->lineno);
+                semanticError("parametro nao pode ser do tipo void", node->linha);
             }
-            insere_simbolo(node->data.name, getAstType(node->filhos[0]), SIMP_PARAM, 0, node->lineno);
+            insere_simbolo(node->data.name, getAstType(node->filhos[0]), SIMP_PARAM, 0, node->linha);
             break;
 
         case NODE_ARRAY_PARAM:
             if (getAstType(node->filhos[0]) == TIPO_VOID) {
-                semanticError("parametro array nao pode ser do tipo void", node->lineno);
+                semanticError("parametro array nao pode ser do tipo void", node->linha);
             }
-            insere_simbolo(node->data.name, getAstType(node->filhos[0]), SIMP_ARRAY, 0, node->lineno);
+            insere_simbolo(node->data.name, getAstType(node->filhos[0]), SIMP_ARRAY, 0, node->linha);
             break;
 
         case NODE_VAR_DECL:
             if (getAstType(node->filhos[0]) == TIPO_VOID) {
-                semanticError("variavel nao pode ser do tipo void", node->lineno);
+                semanticError("variavel nao pode ser do tipo void", node->linha);
             }
-            insere_simbolo(node->data.name, getAstType(node->filhos[0]), SIMP_VAR, 0, node->lineno);
+            insere_simbolo(node->data.name, getAstType(node->filhos[0]), SIMP_VAR, 0, node->linha);
             break;
 
         case NODE_ARRAY_DECL:
             if (getAstType(node->filhos[0]) == TIPO_VOID) {
-                semanticError("array nao pode ser do tipo void", node->lineno);
+                semanticError("array nao pode ser do tipo void", node->linha);
             }
-            insere_simbolo(node->data.name, getAstType(node->filhos[0]), SIMP_ARRAY, node->filhos[1]->data.num, node->lineno);
+            insere_simbolo(node->data.name, getAstType(node->filhos[0]), SIMP_ARRAY, node->filhos[1]->data.num, node->linha);
             break;
 
         case NODE_COMPOUND:
@@ -195,7 +195,7 @@ static Tipo checkNode(AST* node) {
 
         case NODE_IF:
             if (checkExpr(node->filhos[0]) != TIPO_INT)
-                semanticError("condicao do if deve ser int", node->lineno);
+                semanticError("condicao do if deve ser int", node->linha);
 
             checkNode(node->filhos[1]);
             checkNode(node->filhos[2]);
@@ -203,27 +203,27 @@ static Tipo checkNode(AST* node) {
 
         case NODE_WHILE:
             if (checkExpr(node->filhos[0]) != TIPO_INT)
-                semanticError("condicao do while deve ser int", node->lineno);
+                semanticError("condicao do while deve ser int", node->linha);
 
             checkNode(node->filhos[1]);
             break;
 
         case NODE_RETURN:
             if (!dentro_funcao) {
-                semanticError("return fora de funcao", node->lineno);
+                semanticError("return fora de funcao", node->linha);
             }
             
             if (node->filhos[0] != NULL) {
                 Tipo t = checkExpr(node->filhos[0]);
                 if (tipo_funcao_atual == TIPO_VOID)
-                    semanticError("return com valor em funcao void", node->lineno);
+                    semanticError("return com valor em funcao void", node->linha);
                 if (t != tipo_funcao_atual && tipo_funcao_atual != TIPO_ERRO)
-                    semanticError("tipo de retorno incompativel", node->lineno);
+                    semanticError("tipo de retorno incompativel", node->linha);
                 funcao_tem_return = 1;
             } else {
                 /* return sem valor */
                 if (tipo_funcao_atual == TIPO_INT)
-                    semanticError("funcao int deve retornar valor", node->lineno);
+                    semanticError("funcao int deve retornar valor", node->linha);
             }
             break;
 
@@ -232,9 +232,9 @@ static Tipo checkNode(AST* node) {
             Tipo t2 = checkExpr(node->filhos[1]);
 
             if (t1 == TIPO_VOID || t2 == TIPO_VOID)
-                semanticError("nao e possivel atribuir tipo void", node->lineno);
+                semanticError("nao e possivel atribuir tipo void", node->linha);
             if (t1 != t2)
-                semanticError("atribuicao com tipos incompativeis", node->lineno);
+                semanticError("atribuicao com tipos incompativeis", node->linha);
             break;
         }
 
@@ -263,11 +263,11 @@ static Tipo checkExpr(AST* node) {
         case NODE_VAR: {
             Simbolo* s = busca_simbolo(node->data.name);
             if (s == NULL) {
-                semanticErrorId(node->data.name, node->lineno);
+                semanticErrorId(node->data.name, node->linha);
             }
             /* Verifica se está tentando usar uma função como variável */
             if (s->classe == SIMP_FUNC) {
-                semanticError("funcao usada como variavel", node->lineno);
+                semanticError("funcao usada como variavel", node->linha);
             }
             return s->tipo;
         }
@@ -275,16 +275,16 @@ static Tipo checkExpr(AST* node) {
         case NODE_ARRAY_ACCESS: {
             Simbolo* s = busca_simbolo(node->data.name);
             if (s == NULL) {
-                semanticErrorId(node->data.name, node->lineno);
+                semanticErrorId(node->data.name, node->linha);
             }
 
             /* Verifica se é realmente um array */
             if (s->classe != SIMP_ARRAY) {
-                semanticError("variavel nao e um array", node->lineno);
+                semanticError("variavel nao e um array", node->linha);
             }
 
             if (checkExpr(node->filhos[0]) != TIPO_INT)
-                semanticError("indice de array deve ser int", node->lineno);
+                semanticError("indice de array deve ser int", node->linha);
 
             return s->tipo;
         }
@@ -294,7 +294,7 @@ static Tipo checkExpr(AST* node) {
             Tipo t2 = checkExpr(node->filhos[1]);
 
             if (t1 != TIPO_INT || t2 != TIPO_INT)
-                semanticError("operacao aritmetica exige operandos int", node->lineno);
+                semanticError("operacao aritmetica exige operandos int", node->linha);
 
             return TIPO_INT;
         }
@@ -304,7 +304,7 @@ static Tipo checkExpr(AST* node) {
             Tipo t2 = checkExpr(node->filhos[1]);
 
             if (t1 != TIPO_INT || t2 != TIPO_INT)
-                semanticError("operacao relacional exige operandos int", node->lineno);
+                semanticError("operacao relacional exige operandos int", node->linha);
 
             return TIPO_INT;
         }
@@ -312,25 +312,25 @@ static Tipo checkExpr(AST* node) {
         case NODE_CALL: {
             Simbolo* s = busca_simbolo(node->data.name);
             if (s == NULL) {
-                semanticErrorId(node->data.name, node->lineno);
+                semanticErrorId(node->data.name, node->linha);
             }
 
             /* Verifica se é realmente uma função */
             if (s->classe != SIMP_FUNC) {
-                semanticError("identificador nao e uma funcao", node->lineno);
+                semanticError("identificador nao e uma funcao", node->linha);
             }
 
             /* Verificações específicas para output() */
             if (strcmp(node->data.name, "output") == 0) {
                 int numArgs = countParams(node->filhos[0]);
                 if (numArgs != 1) {
-                    semanticError("output() requer exatamente 1 argumento", node->lineno);
+                    semanticError("output() requer exatamente 1 argumento", node->linha);
                 }
                 /* Verifica se o argumento é int */
                 if (node->filhos[0] != NULL) {
                     Tipo argTipo = checkExpr(node->filhos[0]);
                     if (argTipo != TIPO_INT) {
-                        semanticError("argumento de output() deve ser int", node->lineno);
+                        semanticError("argumento de output() deve ser int", node->linha);
                     }
                 }
             }
@@ -339,7 +339,7 @@ static Tipo checkExpr(AST* node) {
             if (strcmp(node->data.name, "input") == 0) {
                 int numArgs = countParams(node->filhos[0]);
                 if (numArgs != 0) {
-                    semanticError("input() nao recebe argumentos", node->lineno);
+                    semanticError("input() nao recebe argumentos", node->linha);
                 }
             }
 
@@ -353,13 +353,13 @@ static Tipo checkExpr(AST* node) {
 
 /* Tratamento de erro semântico */
 
-static void semanticError(const char* msg, int lineno) {
-    fprintf(stderr, "ERRO SEMANTICO: %s - LINHA: %d\n", msg, lineno);
+static void semanticError(const char* msg, int linha) {
+    fprintf(stderr, "ERRO SEMANTICO: %s - LINHA: %d\n", msg, linha);
     exit(1);
 }
 
 /* Erro semântico com identificador (formato exigido) */
-static void semanticErrorId(const char* id, int lineno) {
-    fprintf(stderr, "ERRO SEMANTICO: identificador '%s' nao declarado - LINHA: %d\n", id, lineno);
+static void semanticErrorId(const char* id, int linha) {
+    fprintf(stderr, "ERRO SEMANTICO: identificador '%s' nao declarado - LINHA: %d\n", id, linha);
     exit(1);
 }

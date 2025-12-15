@@ -48,11 +48,11 @@ void sai_escopo(void) {
     }
 }
 
-void insere_simbolo(char *nome, Tipo tipo, Classe classe, int tamanho, int lineno_val){
+void insere_simbolo(char *nome, Tipo tipo, Classe classe, int tamanho, int linha_val){
     for(Simbolo *sim = escopo_atual->simbolos; sim != NULL; sim = sim->prox){
         if(strcmp(sim->nome, nome) == 0){
             /* fprintf(stderr, "Erro: símbolo '%s' já declarado neste escopo.\n", nome); // Talvez tirar daqui e só deixar o YYERROR? */
-            fprintf(stderr, "ERRO SEMANTICO: identificador '%s' ja declarado neste escopo - LINHA: %d\n", nome, lineno);
+            fprintf(stderr, "ERRO SEMANTICO: identificador '%s' ja declarado neste escopo - LINHA: %d\n", nome, linha);
             exit(1);
         }
     }
@@ -60,7 +60,7 @@ void insere_simbolo(char *nome, Tipo tipo, Classe classe, int tamanho, int linen
     novo->nome = strdup(nome);
     novo->tipo = tipo;
     novo->classe = classe;
-    novo->lineno = lineno_val;
+    novo->linha = linha_val;
     novo->tamanho = tamanho;
     novo->prox = escopo_atual->simbolos;
     escopo_atual->simbolos = novo;
@@ -110,7 +110,7 @@ void imprime_tabela(void) {
                 }
 
                 printf("%-15s %-10s %-10s %-10d %-10d\n",
-                       s->nome, tipo, classe, s->tamanho, s->lineno);
+                       s->nome, tipo, classe, s->tamanho, s->linha);
                 
                 s = s->prox;
             }
