@@ -42,13 +42,13 @@ typedef enum {
 typedef struct AST {
     NodeType type;
     union {
-        int num;              // para NUM
+        int num;              
         char* name;           // para ID 
         char op;              // para operadores 
         char* relop;          // para operadores relacionais
     } data;
     struct AST* filhos[4];     // filhos (até 4: tipo, nome, params, corpo, etc.)
-    struct AST* irmao;         // irmão (para listas)
+    struct AST* irmao;         // irmão (para listas de elementos como declarações, argumentos, etc.)
     int lineno;               // linha no código fonte
 } AST;
 

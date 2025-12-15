@@ -22,7 +22,9 @@ gcc -Wall -g parser.tab.c lex.yy.c semantic.c -o compilador.exe
 4️⃣ Rodar o compilador:
 ./compilador.exe teste.c
 
-
+5️⃣ Visualizar a AST (GraphViz)
+dot -Tpng arvore.dot -o arvore.png
+dot -Tsvg arvore.dot -o arvore.svg  (alternativa)
 
 - $env:BISON_PKGDATADIR="C:\FLEXWI~1\Bison\share\bison"
 - bison -d parser.y
