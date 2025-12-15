@@ -402,10 +402,10 @@ char *yytext;
 #include "globals.h"
 #include "parser.tab.h"
 
-int lineno = 1;
+int linha = 1;
 char tokenString[MAXTOKENLEN+1];
+char lastToken[MAXTOKENLEN+1] = "";
 /* Declarando as palavras reservadas e tokens*/
-#line 409 "lex.yy.c"
 
 /* Macros after this point can all be overridden by user definitions in
  * section 1.
@@ -556,10 +556,9 @@ YY_DECL
 	register char *yy_cp, *yy_bp;
 	register int yy_act;
 
-#line 18 "scanner.l"
+#line 19 "scanner.l"
 
 
-#line 563 "lex.yy.c"
 
 	if ( yy_init )
 		{
@@ -644,185 +643,186 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 20 "scanner.l"
+#line 21 "scanner.l"
 { return ELSE; }
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 21 "scanner.l"
+#line 22 "scanner.l"
 { return IF; }
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 22 "scanner.l"
+#line 23 "scanner.l"
 { return INT; }
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 23 "scanner.l"
+#line 24 "scanner.l"
 { return RETURN; }
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 24 "scanner.l"
+#line 25 "scanner.l"
 { return VOID; }
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 25 "scanner.l"
+#line 26 "scanner.l"
 { return WHILE; }
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 27 "scanner.l"
+#line 28 "scanner.l"
 { return PLUS; }
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 28 "scanner.l"
+#line 29 "scanner.l"
 { return MINUS; }
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 29 "scanner.l"
+#line 30 "scanner.l"
 { return TIMES; }
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 30 "scanner.l"
+#line 31 "scanner.l"
 { return DIV; }
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 32 "scanner.l"
+#line 33 "scanner.l"
 { return LESSEQUAL; }
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 33 "scanner.l"
+#line 34 "scanner.l"
 { return GREATEREQUAL; }
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 34 "scanner.l"
+#line 35 "scanner.l"
 { return EQUAL; }
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 35 "scanner.l"
+#line 36 "scanner.l"
 { return NOTEQUAL; }
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 36 "scanner.l"
+#line 37 "scanner.l"
 { return LESSTHAN; }
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 37 "scanner.l"
+#line 38 "scanner.l"
 { return GREATERTHAN; }
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 38 "scanner.l"
+#line 39 "scanner.l"
 { return ASSIGN; }
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 40 "scanner.l"
+#line 41 "scanner.l"
 { return SEMICOLON; }
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 41 "scanner.l"
+#line 42 "scanner.l"
 { return COMMA; }
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 42 "scanner.l"
+#line 43 "scanner.l"
 { return LEFTPAREN; }
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 43 "scanner.l"
+#line 44 "scanner.l"
 { return RIGHTPAREN; }
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 44 "scanner.l"
+#line 45 "scanner.l"
 { return LEFTBRACKET; }
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 45 "scanner.l"
+#line 46 "scanner.l"
 { return RIGHTBRACKET; }
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 46 "scanner.l"
+#line 47 "scanner.l"
 { return LEFTBRACE; }
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 47 "scanner.l"
+#line 48 "scanner.l"
 { return RIGHTBRACE; }
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 49 "scanner.l"
+#line 50 "scanner.l"
 { 
-                  yylval.num = atoi(yytext); 
+                  yylval.num = atoi(yytext);
+                  strncpy(lastToken, yytext, MAXTOKENLEN);
                   return NUM;
                 }
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 54 "scanner.l"
+#line 56 "scanner.l"
 { 
-                  yylval.id  = strdup(yytext); 
+                  yylval.id  = strdup(yytext);
+                  strncpy(lastToken, yytext, MAXTOKENLEN);
                   return ID; 
                 }
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 59 "scanner.l"
-{ lineno++; }
+#line 62 "scanner.l"
+{ linha++; }
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 60 "scanner.l"
+#line 63 "scanner.l"
 { /* pular espaço em branco */ }
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 62 "scanner.l"
+#line 65 "scanner.l"
 {
                   char c;
-                  int comment_line = lineno;
+                  int comment_line = linha;
                   do {
                     c = input();
                     if (c == EOF) {
                       fprintf(stderr, "ERRO LEXICO: comentario nao fechado - LINHA: %d\n", comment_line);
                       return ERROR;
                     }
-                    if (c == '\n') lineno++;
+                    if (c == '\n') linha++;
                   } while (c != '*' || (c = input()) != '/');
                 }
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 75 "scanner.l"
+#line 78 "scanner.l"
 {
-                  fprintf(stderr, "ERRO LEXICO: '%s' - LINHA: %d\n", yytext, lineno);
+                  fprintf(stderr, "ERRO LEXICO: '%s' - LINHA: %d\n", yytext, linha);
                   return ERROR;
                 }
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 80 "scanner.l"
+#line 83 "scanner.l"
 ECHO;
 	YY_BREAK
-#line 826 "lex.yy.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -1708,7 +1708,7 @@ int main()
 	return 0;
 	}
 #endif
-#line 80 "scanner.l"
+#line 83 "scanner.l"
 
 
 int yywrap(void) {
