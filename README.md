@@ -30,3 +30,6 @@ Compilador simples implementado em C utilizando Flex e Bison, como parte do trab
 ### Para Visualizar a AST (GraphViz)
 - dot -Tpng arvore.dot -o arvore.png
 - dot -Tsvg arvore.dot -o arvore.svg  (alternativa)
+
+## Possível erro:
+Trocar "%define parse.error verbose" por "%error-verbose" no arquivo parser.y para Bison 2.x
