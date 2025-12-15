@@ -1,32 +1,32 @@
 # Trabalho-Comp-Unifesp
 
 
-Steps que eu (Zampoli) estou usando para rodar o Flex e o Bison no Windows pelo PowerShell:
-- $env:BISON_PKGDATADIR="C:\FLEXWI~1\Bison\share\bison"
-- bison -d -o seman.tab.c seman.y
-- cmd /c '"C:\FLEXWI~1\Lex\bin\flex.exe" -t scanner.l > lex.yy.c'
-- gcc -o seman.exe seman.tab.c lex.yy.c
-- ./seman.exe teste.c
+# Trabalho-Comp-Unifesp
+Compilador simples implementado em C utilizando Flex e Bison, como parte do trabalho da disciplina de Compiladores da Unifesp.
 
+## Requisitos
+- Flex
+- Bison
+- GCC
+- Make
 
-1️⃣ Gerar o parser (AST + semântica local):
-$env:BISON_PKGDATADIR="C:\FLEXWI~1\Bison\share\bison"
-bison -d -o parser.tab.c parser.y
+## Estrutura do Projeto
+- `parser.y`: Arquivo de definição da gramática utilizando Bison.
+- `scanner.l`: Arquivo de definição do analisador léxico utilizando Flex.
+- `semantic.h` e `semantic.c`: Implementação da análise semântica.
+- `symbol_table.c` e `symbol_table.h`: Implementação da tabela de símbolos.
 
-2️⃣ Gerar o scanner:
-cmd /c '"C:\FLEXWI~1\Lex\bin\flex.exe" -t scanner.l > lex.yy.c'
-
-3️⃣ Compilar TUDO junto:
-gcc -Wall -g parser.tab.c lex.yy.c semantic.c -o compilador.exe
-
-4️⃣ Rodar o compilador:
-./compilador.exe teste.c
-
-5️⃣ Visualizar a AST (GraphViz)
-dot -Tpng arvore.dot -o arvore.png
-dot -Tsvg arvore.dot -o arvore.svg  (alternativa)
+## Como Compilar e Executar
+1. Abra o PowerShell.
+2. Navegue até o diretório do projeto.
+3. Execute os seguintes comandos:
 
 - $env:BISON_PKGDATADIR="C:\FLEXWI~1\Bison\share\bison"
 - bison -d parser.y
 - flex scanner.l
 - gcc -Wall -g parser.tab.c lex.yy.c semantic.c symbol_table.c -o compilador.exe
+- ./compilador.exe teste.c
+
+### Para Visualizar a AST (GraphViz)
+- dot -Tpng arvore.dot -o arvore.png
+- dot -Tsvg arvore.dot -o arvore.svg  (alternativa)
